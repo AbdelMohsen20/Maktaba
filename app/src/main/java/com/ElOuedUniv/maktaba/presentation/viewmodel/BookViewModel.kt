@@ -55,4 +55,10 @@ class BookViewModel(
     fun refreshBooks() {
         loadBooks()
     }
+    fun totalPages(): Int {
+        return _books.value.sumOf { it.nbPages }
+    }
+    fun getLongBooks(): List<Book> {
+        return _books.value.filter { it.nbPages > 400 }
+    }
 }
