@@ -51,6 +51,8 @@ fun BookListScreen(
                         modifier = Modifier.align(Alignment.Center)
                     )
                 } else {
+                    Text(text = "Total Books: ${books.size}",
+                        modifier = Modifier.padding(16.dp))
                     BookList(
                         books = books,
                         modifier = Modifier.fillMaxSize()
