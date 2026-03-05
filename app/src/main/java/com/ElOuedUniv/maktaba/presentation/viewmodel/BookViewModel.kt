@@ -19,6 +19,14 @@ class BookViewModel(
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
+    fun getLongBooks(): List<Book> {
+        return books.value.filter { it.nbPages > 400 }
+    }
+
+    fun totalPages(): Int {
+        return books.value.sumOf { it.nbPages }
+    }
+
     init {
         loadBooks()
     }

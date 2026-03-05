@@ -7,11 +7,15 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import com.ElOuedUniv.maktaba.domain.usecase.GetCategoriesUseCase
 
-class CategoryViewModel : ViewModel() {
+class CategoryViewModel(
+    private val getCategoriesUseCase: GetCategoriesUseCase
+) : ViewModel() {
 
     private val _categories = MutableStateFlow<List<Category>>(emptyList())
     val categories: StateFlow<List<Category>> = _categories.asStateFlow()
+
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
@@ -24,12 +28,8 @@ class CategoryViewModel : ViewModel() {
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                // TODO: Use GetCategoriesUseCase instead of dummy data
-                // val categoryList = getCategoriesUseCase()
-                // _categories.value = categoryList
-                
-                // Dummy data for demonstration
-                _categories.value = emptyList()
+                val categoryList = getCategoriesUseCase()
+                _categories.value = categoryList
             } finally {
                 _isLoading.value = false
             }
@@ -38,5 +38,8 @@ class CategoryViewModel : ViewModel() {
 
     fun refreshCategories() {
         loadCategories()
+    }
+    fun getCategoryById(id: String): Category? {
+        return categories.value.find { it.id == id }
     }
 }

@@ -15,21 +15,28 @@ import com.ElOuedUniv.maktaba.presentation.view.CategoryListView
 import com.ElOuedUniv.maktaba.presentation.theme.MaktabaTheme
 import com.ElOuedUniv.maktaba.presentation.viewmodel.BookViewModel
 import com.ElOuedUniv.maktaba.presentation.viewmodel.CategoryViewModel
+import com.ElOuedUniv.maktaba.data.repository.CategoryRepositoryImpl
+import com.ElOuedUniv.maktaba.domain.usecase.GetCategoriesUseCase
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        
+
+        // Book dependencies
         val bookRepository = BookRepositoryImpl()
         val getBooksUseCase = GetBooksUseCase(bookRepository)
         val bookViewModel = BookViewModel(getBooksUseCase)
-        val categoryViewModel = CategoryViewModel()
-        
+
+        // Category dependencies
+        val categoryRepository = CategoryRepositoryImpl()
+        val getCategoriesUseCase = GetCategoriesUseCase(categoryRepository)
+        val categoryViewModel = CategoryViewModel(getCategoriesUseCase)
+
         setContent {
             MaktabaTheme {
                 var showCategories by remember { mutableStateOf(false) }
-                
+
                 if (showCategories) {
                     CategoryListView(
                         viewModel = categoryViewModel,
