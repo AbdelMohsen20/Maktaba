@@ -12,55 +12,64 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.flow.update
+import com.ElOuedUniv.maktaba.domain.usecase.AddBookUseCase
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+
 
 @HiltViewModel
 class BookViewModel @Inject constructor(
-    private val getBooksUseCase: GetBooksUseCase
+    private val getBooksUseCase: GetBooksUseCase,
+    private val addBookUseCase: AddBookUseCase
 ) : ViewModel() {
 
-    private val _books = MutableStateFlow<List<Book>>(emptyList())
-    val books: StateFlow<List<Book>> = _books.asStateFlow()
+    private val _uiState = MutableStateFlow(BookUiState())
+    val uiState: StateFlow<BookUiState> = _uiState.asStateFlow()
 
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
-
+    private val _uiEvent = MutableSharedFlow<BookUiEvent>()
+    val uiEvent: SharedFlow<BookUiEvent> = _uiEvent
     init {
         loadBooks()
     }
 
     fun loadBooks() {
         viewModelScope.launch {
-            _isLoading.value = true
-                getBooksUseCase().catch {
-                    _isLoading.value = false
-                }.collect { bookList ->
-                    _books.value = bookList
-                    _isLoading.value = false
+            _uiState.update { it.copy(isLoading = true) }
+            getBooksUseCase()
+                .catch { e ->
+                    _uiState.update { it.copy(isLoading = false, errorMessage = e.message) }
+                }
+                .collect { bookList ->
+                    _uiState.update { it.copy(books = bookList, isLoading = false) }
                 }
 
         }
     }
 
-    /**
-     * TODO: Exercise 3 - Handle UI Actions
-     */
+
     fun onAction(action: BookUiAction) {
         when (action) {
-            BookUiAction.RefreshBooks -> refreshBooks()
+            BookUiAction.RefreshBooks -> loadBooks()
             BookUiAction.OnAddBookClick -> {
-                // TODO: Set isAddingBook = true in your uiState
+                _uiState.update { it.copy( isAddingBook = true) }
             }
             BookUiAction.OnDismissAddBook -> {
-                // TODO: Set isAddingBook = false
+                _uiState.update { it.copy(isAddingBook = false) }
             }
             is BookUiAction.OnAddBookConfirm -> {
-                // TODO: Call AddBookUseCase and hide dialog
+                addBook(action.title, action.isbn, action.nbPages)
             }
         }
     }
 
-    fun refreshBooks() {
-        loadBooks()
+    private fun addBook(title: String, isbn: String, nbPages: Int) {
+        viewModelScope.launch {
+            val newBook = Book(isbn = isbn, title = title, nbPages = nbPages)
+            addBookUseCase(newBook)
+            _uiState.update { it.copy(isAddingBook = false) }
+            _uiEvent.emit(BookUiEvent.ShowSnackbar("Book added successfully!"))
+        }
     }
 }
 

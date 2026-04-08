@@ -10,20 +10,29 @@ import javax.inject.Inject
 
 class BookRepositoryImpl @Inject constructor() : BookRepository {
 
-    private val _booksList = listOf(
-        Book(isbn = "11111", title = "Clean Code", nbPages = 10),
-        Book(isbn = "22222", title = "The Pragmatic Programmer", nbPages = 0),
-        Book(isbn = "33333", title = "Design Patterns", nbPages = 0),
-        Book(isbn = "44444", title = "Refactoring", nbPages = 0),
-        Book(isbn = "55555", title = "Head First Design Patterns", nbPages = 0)
+    private val _booksList = mutableListOf(
+        Book(isbn = "978-0-13-468599-1", title = "Clean Code", nbPages = 464),
+        Book(isbn = "978-0-13-595705-9", title = "The Pragmatic Programmer", nbPages = 352),
+        Book(isbn = "978-0-201-63361-0", title = "Design Patterns", nbPages = 395),
+        Book(isbn = "978-0-13-475759-9", title = "Refactoring", nbPages = 448),
+        Book(isbn = "978-1-492-07800-5", title = "Head First Design Patterns", nbPages = 694),
+
+        /** Exercise 2 :Add 5 more books to the list above. **/
+
+        Book(isbn = "978-1-119-29964-6", title = "Android Application Development", nbPages = 500),
+        Book(isbn = "978-0-7897-2569-1", title = "Absolute Beginner’s Guide to Databases", nbPages = 336),
+        Book(isbn = "978-995-986-012-5", title = "الدَّاءُ وَالدَّوَاءُ", nbPages = 293),
+        Book(isbn = "978-9953-62-063-3", title = "رِيَاضُ الصَّالِحِينَ", nbPages = 688),
+        Book(isbn = "978-995-986-045-3", title = "زَادُ المَعَادِ فِي هَدْيِ خَيْرِ العِبَادِ", nbPages = 1780)
+
     )
 
     private val booksFlow = MutableSharedFlow<List<Book>>(replay = 1).apply {
-        tryEmit(_booksList)
+        tryEmit(_booksList.toList())
     }
     
     override fun getAllBooks(): Flow<List<Book>> = flow {
-        delay(2000) // Simulate delay
+        delay(1000) // Simulate network
         emitAll(booksFlow)
     }
 
@@ -32,8 +41,9 @@ class BookRepositoryImpl @Inject constructor() : BookRepository {
     }
 
     override fun addBook(book: Book) {
-        // TODO: Exercise 2 - Implement adding a book to the list and emitting the new list
-        // Hint: This is a bit tricky with sharedFlow, think about how to update it.
+
+            _booksList.add(book)
+            booksFlow.tryEmit(_booksList.toList())
     }
 }
 

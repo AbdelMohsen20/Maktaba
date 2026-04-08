@@ -15,7 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ElOuedUniv.maktaba.data.model.Category
-import com.ElOuedUniv.maktaba.presentation.category.CategoryViewModel
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -23,11 +23,11 @@ fun CategoryListView(
     onBackClick: () -> Unit,
     viewModel: CategoryViewModel = hiltViewModel()
 ) {
-    val categories by viewModel.categories.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
 
     Scaffold(
         topBar = {
+            @OptIn(ExperimentalMaterial3Api::class)
             TopAppBar(
                 title = { Text("Categories") },
                 navigationIcon = {
@@ -50,21 +50,29 @@ fun CategoryListView(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            if (isLoading) {
+            if (uiState.isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center)
                 )
             } else {
-                if (categories.isEmpty()) {
+                if (uiState.categories.isEmpty()) {
                     EmptyCategoriesMessage(
                         modifier = Modifier.align(Alignment.Center)
                     )
                 } else {
                     CategoryList(
-                        categories = categories,
+                        categories = uiState.categories,
                         modifier = Modifier.fillMaxSize()
                     )
                 }
+            }
+
+            uiState.errorMessage?.let { error ->
+                Text(
+                    text = error,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.align(Alignment.Center)
+                )
             }
         }
     }
@@ -132,7 +140,7 @@ fun EmptyCategoriesMessage(modifier: Modifier = Modifier) {
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "Complete the TODO exercises in TP2",
+            text = "Check your internet connection or try again later.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )

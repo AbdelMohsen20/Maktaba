@@ -2,25 +2,24 @@ package com.ElOuedUniv.maktaba.presentation.category
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ElOuedUniv.maktaba.data.model.Category
 import com.ElOuedUniv.maktaba.domain.usecase.GetCategoriesUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.flow.*
 
 @HiltViewModel
-class CategoryViewModel @Inject constructor(private val getCategoriesUseCase: GetCategoriesUseCase) : ViewModel() {
+class CategoryViewModel @Inject constructor(
+    private val getCategoriesUseCase: GetCategoriesUseCase
+) : ViewModel() {
 
-    private val _categories = MutableStateFlow<List<Category>>(emptyList())
-    val categories: StateFlow<List<Category>> = _categories.asStateFlow()
-
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+    private val _uiState = MutableStateFlow(CategoryUiState())
+    val uiState: StateFlow<CategoryUiState> = _uiState.asStateFlow()
 
     init {
         loadCategories()
@@ -28,14 +27,19 @@ class CategoryViewModel @Inject constructor(private val getCategoriesUseCase: Ge
 
     private fun loadCategories() {
         viewModelScope.launch {
-            _isLoading.value = true
+
+            _uiState.update { it.copy(isLoading = true) }
+
             getCategoriesUseCase()
-                .catch {
-                    _isLoading.value = false
+                .catch { e ->
+                    _uiState.update {
+                        it.copy(isLoading = false, errorMessage = e.message)
+                    }
                 }
                 .collect { categoryList ->
-                    _categories.value = categoryList
-                    _isLoading.value = false
+                    _uiState.update {
+                        it.copy(categories = categoryList, isLoading = false)
+                    }
                 }
         }
     }
