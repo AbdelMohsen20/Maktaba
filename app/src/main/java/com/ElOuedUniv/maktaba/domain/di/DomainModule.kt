@@ -46,4 +46,20 @@ object DomainModule {
     ): com.ElOuedUniv.maktaba.domain.usecase.GetBookByIsbnUseCase {
         return com.ElOuedUniv.maktaba.domain.usecase.GetBookByIsbnUseCase(bookRepository)
     }
+
+    @Provides
+    @Singleton
+    fun provideUpdateBookUseCase(
+        bookRepository: BookRepository
+    ): com.ElOuedUniv.maktaba.domain.usecase.UpdateBookUseCase {
+        return com.ElOuedUniv.maktaba.domain.usecase.UpdateBookUseCase(bookRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideDeleteBookUseCase(
+        bookRepository: BookRepository
+    ): com.ElOuedUniv.maktaba.domain.usecase.DeleteBookUseCase {
+        return com.ElOuedUniv.maktaba.domain.usecase.DeleteBookUseCase(bookRepository)
+    }
 }

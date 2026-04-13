@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ElOuedUniv.maktaba.data.model.Book
 import com.ElOuedUniv.maktaba.domain.usecase.AddBookUseCase
+import com.ElOuedUniv.maktaba.domain.usecase.DeleteBookUseCase
 import com.ElOuedUniv.maktaba.domain.usecase.GetBooksUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,7 +18,8 @@ import javax.inject.Inject
 @HiltViewModel
 class BookViewModel @Inject constructor(
     private val getBooksUseCase: GetBooksUseCase,
-    private val addBookUseCase: AddBookUseCase
+    private val addBookUseCase: AddBookUseCase,
+    private val deleteBookUseCase: DeleteBookUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(BookUiState())
@@ -56,10 +58,16 @@ class BookViewModel @Inject constructor(
                 val newBook = Book(
                     isbn = action.isbn,
                     title = action.title,
-                    nbPages = action.nbPages
+                    nbPages = action.nbPages,
+                    imageUrl = null
                 )
                 addBookUseCase(newBook)
                 _uiState.update { it.copy(isAddingBook = false) }
+            }
+            is BookUiAction.OnDeleteBook -> {
+                viewModelScope.launch {
+                    deleteBookUseCase(action.isbn)
+                }
             }
         }
     }

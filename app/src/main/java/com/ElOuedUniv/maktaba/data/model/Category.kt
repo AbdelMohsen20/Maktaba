@@ -4,5 +4,6 @@ package com.ElOuedUniv.maktaba.data.model
 data class Category(
     val id: String,
     val name: String,
-    val description: String
+    val description: String,
+    val iconRes: Int
 )
