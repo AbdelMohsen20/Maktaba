@@ -7,8 +7,6 @@ import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -21,7 +19,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.draw.clip
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ElOuedUniv.maktaba.data.model.Book
-import com.ElOuedUniv.maktaba.presentation.book.BookUiAction
 import com.ElOuedUniv.maktaba.presentation.common.UriImage
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -85,7 +82,6 @@ fun BookListView(
                     BookList(
                         books = uiState.books,
                         onBookClick = onBookClick,
-                        onDeleteBookClick = { isbn -> viewModel.onAction(BookUiAction.OnDeleteBook(isbn)) },
                         modifier = Modifier.fillMaxSize()
                     )
                 }
@@ -98,7 +94,6 @@ fun BookListView(
 fun BookList(
     books: List<Book>,
     onBookClick: (String) -> Unit,
-    onDeleteBookClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyVerticalGrid(
@@ -109,8 +104,7 @@ fun BookList(
         items(books) { book ->
             BookCard(
                 book = book,
-                onClick = { onBookClick(book.isbn) },
-                onDeleteClick = { onDeleteBookClick(book.isbn) }
+                onClick = { onBookClick(book.isbn) }
             )
         }
     }
@@ -195,8 +189,7 @@ fun EmptyBooksMessage(modifier: Modifier = Modifier) {
 @Composable
 fun BookCard(
     book: Book,
-    onClick: () -> Unit,
-    onDeleteClick: () -> Unit
+    onClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -206,96 +199,60 @@ fun BookCard(
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(6.dp)
     ) {
-        Box {
-            Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface)) {
-                UriImage(
-                    uriString = book.imageUrl,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(160.dp)
-                        .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)),
-                    contentDescription = "Book cover"
+        Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface)) {
+            UriImage(
+                uriString = book.imageUrl,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(160.dp)
+                    .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)),
+                contentDescription = "Book cover"
+            )
+
+            Column(
+                modifier = Modifier
+                    .padding(12.dp)
+            ) {
+                Text(
+                    text = book.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 2
                 )
 
-                Column(
-                    modifier = Modifier
-                        .padding(12.dp)
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Divider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f))
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(
-                        text = book.title,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        maxLines = 2
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Divider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f))
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Column {
-                            Text(
-                                text = "ISBN",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Text(
-                                text = book.isbn.ifEmpty { "Not set" },
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        }
-                        Column(horizontalAlignment = Alignment.End) {
-                            Text(
-                                text = "Status",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Text(
-                                text = if (book.nbPages > 0) "Reading" else "Finished",
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        }
+                    Column {
+                        Text(
+                            text = "ISBN",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = book.isbn.ifEmpty { "Not set" },
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
                     }
-                }
-            }
-
-            Row(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(8.dp)
-            ) {
-                IconButton(
-                    onClick = onClick,
-                    modifier = Modifier
-                        .size(36.dp)
-                        .background(MaterialTheme.colorScheme.primaryContainer, shape = RoundedCornerShape(12.dp))
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = "Edit",
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                IconButton(
-                    onClick = onDeleteClick,
-                    modifier = Modifier
-                        .size(36.dp)
-                        .background(MaterialTheme.colorScheme.errorContainer, shape = RoundedCornerShape(12.dp))
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Delete",
-                        tint = MaterialTheme.colorScheme.onErrorContainer
-                    )
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text(
+                            text = "Status",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = if (book.nbPages > 0) "Reading" else "Finished",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
                 }
             }
         }
