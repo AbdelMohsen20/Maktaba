@@ -12,13 +12,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
 import com.ElOuedUniv.maktaba.data.model.Category
-import com.ElOuedUniv.maktaba.presentation.category.CategoryViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -113,20 +113,28 @@ fun CategoryItem(category: Category) {
                 .padding(20.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Category Icon
+            // Category Photo
             Surface(
                 modifier = Modifier.size(80.dp),
                 shape = MaterialTheme.shapes.large,
                 color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
             ) {
-                Icon(
-                    painter = painterResource(id = category.iconRes),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .fillMaxSize(),
-                    tint = MaterialTheme.colorScheme.primary
-                )
+                if (!category.imageUrl.isNullOrEmpty()) {
+                    AsyncImage(
+                        model = category.imageUrl,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            text = category.name.take(1),
+                            style = MaterialTheme.typography.headlineMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
             }
             
             Spacer(modifier = Modifier.width(20.dp))
@@ -169,12 +177,6 @@ fun EmptyCategoriesMessage(modifier: Modifier = Modifier) {
         Text(
             text = "No categories available",
             style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "Complete the TODO exercises in TP2",
-            style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }

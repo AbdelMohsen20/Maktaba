@@ -1,9 +1,9 @@
 package com.ElOuedUniv.maktaba.data.di
 
 import com.ElOuedUniv.maktaba.data.repository.BookRepository
-import com.ElOuedUniv.maktaba.data.repository.BookRepositoryImpl
+import com.ElOuedUniv.maktaba.data.repository.SupabaseBookRepositoryImpl
 import com.ElOuedUniv.maktaba.data.repository.CategoryRepository
-import com.ElOuedUniv.maktaba.data.repository.CategoryRepositoryImpl
+import com.ElOuedUniv.maktaba.data.repository.SupabaseCategoryRepositoryImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -17,16 +17,16 @@ object DataModule {
     @Provides
     @Singleton
     fun provideCategoryRepository(
-        categoryRepositoryImpl: CategoryRepositoryImpl
+        repository: SupabaseCategoryRepositoryImpl
     ): CategoryRepository {
-        return categoryRepositoryImpl
+        return repository
     }
 
     @Provides
     @Singleton
     fun provideBookRepository(
-        bookRepositoryImpl: BookRepositoryImpl
+        repository: SupabaseBookRepositoryImpl
     ): BookRepository {
-        return bookRepositoryImpl
+        return repository
     }
 }

@@ -15,19 +15,19 @@ class CategoryRepositoryImpl @Inject constructor() : CategoryRepository {
             id = "1",
             name = "Programming",
             description = "Books about software development and coding",
-            iconRes = android.R.drawable.ic_menu_preferences
+            imageUrl = "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&q=80&w=400"
         ),
         Category(
             id = "2",
             name = "Algorithms",
             description = "Books about algorithms and data structures",
-            iconRes = android.R.drawable.ic_menu_compass
+            imageUrl = "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&q=80&w=400"
         ),
         Category(
             id = "3",
             name = "Databases",
             description = "Books about database design and management",
-            iconRes = android.R.drawable.ic_menu_save
+            imageUrl = "https://images.unsplash.com/photo-1544383835-bda2bc66a55d?auto=format&fit=crop&q=80&w=400"
         )
     )
 

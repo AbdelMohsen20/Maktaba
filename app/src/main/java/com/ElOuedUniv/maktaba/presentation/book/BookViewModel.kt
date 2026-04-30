@@ -52,13 +52,29 @@ class BookViewModel @Inject constructor(
             BookUiAction.OnDismissAddBook -> {
                 _uiState.update { it.copy(isAddingBook = false) }
             }
+            BookUiAction.OnToggleGridColumns -> {
+                _uiState.update { state ->
+                    val nextColumns = when (state.gridColumns) {
+                        1 -> 2
+                        2 -> 3
+                        else -> 1
+                    }
+                    state.copy(gridColumns = nextColumns)
+                }
+            }
             is BookUiAction.OnAddBookConfirm -> {
                 val newBook = Book(
                     isbn = action.isbn,
                     title = action.title,
                     nbPages = action.nbPages
                 )
-                addBookUseCase(newBook)
+                viewModelScope.launch {
+                    try {
+                        addBookUseCase(newBook, null)
+                    } catch (e: Exception) {
+                        _uiState.update { it.copy(errorMessage = e.message) }
+                    }
+                }
                 _uiState.update { it.copy(isAddingBook = false) }
             }
         }
