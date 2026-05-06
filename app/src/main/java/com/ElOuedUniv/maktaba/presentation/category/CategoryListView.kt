@@ -24,6 +24,7 @@ import com.ElOuedUniv.maktaba.data.model.Category
 @Composable
 fun CategoryListView(
     onBackClick: () -> Unit,
+    onCategoryClick: (Category) -> Unit = {},
     viewModel: CategoryViewModel = hiltViewModel()
 ) {
     val categories by viewModel.categories.collectAsState()
@@ -73,6 +74,7 @@ fun CategoryListView(
                 } else {
                     CategoryList(
                         categories = categories,
+                        onCategoryClick = onCategoryClick,
                         modifier = Modifier.fillMaxSize()
                     )
                 }
@@ -84,6 +86,7 @@ fun CategoryListView(
 @Composable
 fun CategoryList(
     categories: List<Category>,
+    onCategoryClick: (Category) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -92,17 +95,18 @@ fun CategoryList(
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         items(categories) { category ->
-            CategoryItem(category = category)
+            CategoryItem(category = category, onClick = { onCategoryClick(category) })
         }
     }
 }
 
 @Composable
-fun CategoryItem(category: Category) {
+fun CategoryItem(category: Category, onClick: () -> Unit = {}) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .height(160.dp),
+        onClick = onClick,
         shape = MaterialTheme.shapes.extraLarge,
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)

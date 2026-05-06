@@ -13,4 +13,10 @@ interface BookRepository {
     suspend fun addBook(book: Book, imageUri: Uri?)
 
     suspend fun deleteBook(isbn: String)
+
+    suspend fun toggleFavorite(isbn: String, isFavorite: Boolean)
+
+    fun searchBooks(query: String): Flow<List<Book>>
+
+    fun getBooksByCategory(categoryId: String): Flow<List<Book>>
 }

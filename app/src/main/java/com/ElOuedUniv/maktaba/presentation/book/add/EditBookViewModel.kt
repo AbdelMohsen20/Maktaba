@@ -1,8 +1,10 @@
 package com.ElOuedUniv.maktaba.presentation.book.add
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ElOuedUniv.maktaba.data.model.Book
+import com.ElOuedUniv.maktaba.data.repository.BookRepository
 import com.ElOuedUniv.maktaba.domain.usecase.AddBookUseCase
 import com.ElOuedUniv.maktaba.domain.usecase.GetCategoriesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -13,22 +15,50 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class AddBookViewModel @Inject constructor(
-    private val addBookUseCase: AddBookUseCase,
-    private val getCategoriesUseCase: GetCategoriesUseCase
+class EditBookViewModel @Inject constructor(
+    private val bookRepository: BookRepository,
+    private val getCategoriesUseCase: GetCategoriesUseCase,
+    private val addBookUseCase: AddBookUseCase, // Reusing for update if implementation supports upsert
+    savedStateHandle: SavedStateHandle
 ) : ViewModel() {
+    
+    private val isbn: String = checkNotNull(savedStateHandle["isbn"])
     
     private val _uiState = MutableStateFlow(AddBookUiState())
     val uiState = _uiState.asStateFlow()
 
     init {
         loadCategories()
+        loadBook()
     }
 
     private fun loadCategories() {
         viewModelScope.launch {
             getCategoriesUseCase().collect { categories ->
                 _uiState.update { it.copy(categories = categories) }
+            }
+        }
+    }
+
+    private fun loadBook() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            val book = bookRepository.getBookByIsbn(isbn)
+            if (book != null) {
+                _uiState.update { 
+                    it.copy(
+                        isLoading = false,
+                        title = book.title,
+                        author = book.author ?: "",
+                        isbn = book.isbn,
+                        nbPages = book.nbPages.toString(),
+                        imageUrl = book.imageUrl,
+                        selectedCategoryId = book.categoryId,
+                        isFormValid = true
+                    ) 
+                }
+            } else {
+                _uiState.update { it.copy(isLoading = false, errorMessage = "Book not found") }
             }
         }
     }
@@ -44,6 +74,7 @@ class AddBookViewModel @Inject constructor(
                 validateInputs()
             }
             is AddBookUiAction.OnIsbnChange -> {
+                // Usually ISBN shouldn't be edited as it's the PK, but let's allow it if needed or disable in UI
                 _uiState.update { it.copy(isbn = action.isbn, errorMessage = null) }
                 validateInputs()
             }
@@ -59,7 +90,7 @@ class AddBookViewModel @Inject constructor(
             }
             AddBookUiAction.OnAddClick -> {
                 if (_uiState.value.isFormValid) {
-                    addBook()
+                    updateBook()
                 }
             }
         }
@@ -88,20 +119,20 @@ class AddBookViewModel @Inject constructor(
         }
     }
 
-    private fun addBook() {
+    private fun updateBook() {
         val currentState = _uiState.value
         val book = Book(
             isbn = currentState.isbn,
             title = currentState.title,
             author = currentState.author,
             nbPages = currentState.nbPages.toIntOrNull() ?: 0,
-            imageUrl = currentState.imageUri?.toString(),
+            imageUrl = currentState.imageUrl, // Preserve old URL if new one not picked
             categoryId = currentState.selectedCategoryId
         )
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             try {
-                addBookUseCase(book, currentState.imageUri)
+                addBookUseCase(book, currentState.imageUri) // Supabase insert with upsert=true works as update
                 _uiState.update { it.copy(isLoading = false, isSuccess = true) }
             } catch (e: Exception) {
                 _uiState.update { it.copy(isLoading = false, errorMessage = e.message ?: "An error occurred") }
@@ -109,11 +140,6 @@ class AddBookViewModel @Inject constructor(
         }
     }
 
-    fun resetSuccess() {
-        _uiState.update { it.copy(isSuccess = false) }
-    }
-
-    fun resetError() {
-        _uiState.update { it.copy(errorMessage = null) }
-    }
+    fun resetSuccess() { _uiState.update { it.copy(isSuccess = false) } }
+    fun resetError() { _uiState.update { it.copy(errorMessage = null) } }
 }

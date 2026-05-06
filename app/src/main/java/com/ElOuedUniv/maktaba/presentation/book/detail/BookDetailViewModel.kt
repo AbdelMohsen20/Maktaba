@@ -44,6 +44,7 @@ class BookDetailViewModel @Inject constructor(
         when (action) {
             BookDetailUiAction.OnBackClick -> { /* Handled in View */ }
             BookDetailUiAction.OnDeleteClick -> deleteBook()
+            BookDetailUiAction.OnEditClick -> { /* Handled in View */ }
         }
     }
 

@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class BookRepositoryImpl @Inject constructor() : BookRepository {
@@ -24,7 +25,7 @@ class BookRepositoryImpl @Inject constructor() : BookRepository {
     }
     
     override fun getAllBooks(): Flow<List<Book>> = flow {
-        delay(2000) // Simulate delay
+        delay(1000) // Simulate delay
         emitAll(booksFlow)
     }
 
@@ -33,8 +34,6 @@ class BookRepositoryImpl @Inject constructor() : BookRepository {
     }
 
     override suspend fun addBook(book: Book, imageUri: Uri?) {
-        // In a real app, you would upload the image and get a URL
-        // For now, we'll just add the book to the list
         val bookWithImage = if (imageUri != null) {
             book.copy(imageUrl = imageUri.toString())
         } else {
@@ -47,5 +46,25 @@ class BookRepositoryImpl @Inject constructor() : BookRepository {
     override suspend fun deleteBook(isbn: String) {
         _booksList.removeIf { it.isbn == isbn }
         booksFlow.tryEmit(_booksList.toList())
+    }
+
+    override suspend fun toggleFavorite(isbn: String, isFavorite: Boolean) {
+        val index = _booksList.indexOfFirst { it.isbn == isbn }
+        if (index != -1) {
+            _booksList[index] = _booksList[index].copy(isFavorite = isFavorite)
+            booksFlow.tryEmit(_booksList.toList())
+        }
+    }
+
+    override fun searchBooks(query: String): Flow<List<Book>> {
+        return booksFlow.map { list ->
+            list.filter { it.title.contains(query, ignoreCase = true) }
+        }
+    }
+
+    override fun getBooksByCategory(categoryId: String): Flow<List<Book>> {
+        return booksFlow.map { list ->
+            list.filter { it.categoryId == categoryId }
+        }
     }
 }

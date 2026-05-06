@@ -25,6 +25,7 @@ import coil.compose.AsyncImage
 @Composable
 fun BookDetailView(
     onBackClick: () -> Unit,
+    onEditClick: (String) -> Unit = {},
     viewModel: BookDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -79,6 +80,13 @@ fun BookDetailView(
                     }
                 },
                 actions = {
+                    IconButton(onClick = { uiState.book?.isbn?.let { onEditClick(it) } }) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Edit Book",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
                     IconButton(onClick = { showDeleteDialog = true }) {
                         Icon(
                             imageVector = Icons.Default.Delete,
@@ -146,6 +154,17 @@ fun BookDetailView(
                         fontWeight = FontWeight.ExtraBold,
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
                     )
+                    
+                    if (book.author != null) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "by ${book.author}",
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Medium,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(32.dp))
 

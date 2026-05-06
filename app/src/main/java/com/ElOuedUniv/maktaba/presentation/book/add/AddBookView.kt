@@ -40,6 +40,8 @@ fun AddBookView(
         viewModel.onAction(AddBookUiAction.OnImagePicked(uri))
     }
 
+    var expanded by remember { mutableStateOf(false) }
+
     LaunchedEffect(uiState.isSuccess) {
         if (uiState.isSuccess) {
             Toast.makeText(context, "Book added successfully!", Toast.LENGTH_SHORT).show()
@@ -102,7 +104,6 @@ fun AddBookView(
                                 modifier = Modifier.fillMaxSize(),
                                 contentScale = ContentScale.Crop
                             )
-                            // Close/Remove button
                             IconButton(
                                 onClick = { viewModel.onAction(AddBookUiAction.OnImagePicked(null)) },
                                 modifier = Modifier
@@ -138,7 +139,6 @@ fun AddBookView(
                         value = uiState.title,
                         onValueChange = { viewModel.onAction(AddBookUiAction.OnTitleChange(it)) },
                         label = { Text("Book Title") },
-                        placeholder = { Text("e.g. Clean Code") },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
                         isError = uiState.titleError != null,
@@ -146,10 +146,19 @@ fun AddBookView(
                     )
 
                     OutlinedTextField(
+                        value = uiState.author,
+                        onValueChange = { viewModel.onAction(AddBookUiAction.OnAuthorChange(it)) },
+                        label = { Text("Author") },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        isError = uiState.authorError != null,
+                        supportingText = { uiState.authorError?.let { Text(it) } }
+                    )
+
+                    OutlinedTextField(
                         value = uiState.isbn,
                         onValueChange = { viewModel.onAction(AddBookUiAction.OnIsbnChange(it)) },
                         label = { Text("ISBN") },
-                        placeholder = { Text("e.g. 9780132350884") },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
                         isError = uiState.isbnError != null,
@@ -160,15 +169,46 @@ fun AddBookView(
                         value = uiState.nbPages,
                         onValueChange = { viewModel.onAction(AddBookUiAction.OnPagesChange(it)) },
                         label = { Text("Pages") },
-                        placeholder = { Text("Not set") },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
                         isError = uiState.nbPagesError != null,
                         supportingText = { uiState.nbPagesError?.let { Text(it) } }
                     )
+
+                    // Category Selector
+                    ExposedDropdownMenuBox(
+                        expanded = expanded,
+                        onExpandedChange = { expanded = !expanded }
+                    ) {
+                        val selectedCategoryName = uiState.categories.find { it.id == uiState.selectedCategoryId }?.name ?: "Select Category"
+                        OutlinedTextField(
+                            value = selectedCategoryName,
+                            onValueChange = {},
+                            readOnly = true,
+                            label = { Text("Category") },
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                            modifier = Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors()
+                        )
+                        ExposedDropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false }
+                        ) {
+                            uiState.categories.forEach { category ->
+                                DropdownMenuItem(
+                                    text = { Text(category.name) },
+                                    onClick = {
+                                        viewModel.onAction(AddBookUiAction.OnCategorySelected(category.id))
+                                        expanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
                 }
 
-                Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.height(32.dp))
 
                 // Action Buttons
                 Row(
